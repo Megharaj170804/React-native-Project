@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write access for appointments collection
+    match /appointments/{document} {
+      // Allow anyone to read appointments (for checking availability)
+      allow read: if true;
+      
+      // Allow anyone to create appointments (for booking)
+      allow create: if true;
+      
+      // Allow authenticated admin users to update/delete appointments
+      allow update, delete: if request.auth != null && 
+        request.auth.token.email == 'megharaj@admin.com';
+    }
+    
+    // Allow read/write access for config collection
+    match /config/{document} {
+      // Allow anyone to read config (for slot settings)
+      allow read: if true;
+      
+      // Allow authenticated admin users to update config
+      allow write: if request.auth != null && 
+        request.auth.token.email == 'megharaj@admin.com';
+      
+      // Allow system to create default config
+      allow create: if true;
+    }
+    
+    // Deny access to all other documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
